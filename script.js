@@ -22,6 +22,9 @@ let selectedPin = null;
 // Firebase Realtime Database 参照（null なら未設定）
 let db = null;
 
+// デバッグログ：スクリプト読み込み確認
+console.log('script.js loaded - firebase defined?', typeof firebase !== 'undefined');
+
 /* ===== 色選択処理 ===== */
 colorRadios.forEach((radio) => {
   radio.addEventListener("change", () => {
@@ -34,11 +37,27 @@ if (window.FIREBASE_CONFIG && typeof firebase !== "undefined") {
   try {
     firebase.initializeApp(window.FIREBASE_CONFIG);
     db = firebase.database();
+    console.log('Firebase initialized in script.js, db ready:', !!db);
   } catch (err) {
     console.warn("Firebase init failed:", err);
     db = null;
   }
 }
+
+// 追加の保険: page load 時にも未初期化なら再試行
+window.addEventListener('load', () => {
+  try {
+    if (window.FIREBASE_CONFIG && typeof firebase !== 'undefined') {
+      if (!firebase.apps || firebase.apps.length === 0) {
+        firebase.initializeApp(window.FIREBASE_CONFIG);
+        db = firebase.database();
+        console.log('Firebase initialized on window.load, db ready:', !!db);
+      }
+    }
+  } catch (e) {
+    console.warn('Firebase init on load failed:', e);
+  }
+});
 
 /* ===== DBから来たピンをDOMに反映するヘルパー ===== */
 function addPinFromData(key, data) {
@@ -135,6 +154,7 @@ wrapper.addEventListener("click", (e) => {
   wrapper.appendChild(pin);
 
   // DBがある場合は保存（push）し、キーを割り当てる
+  console.log('Attempting to save pin to DB? db=', !!db);
   if (db) {
     const pinsRef = db.ref('pins');
     const newRef = pinsRef.push();
@@ -142,6 +162,7 @@ wrapper.addEventListener("click", (e) => {
       .then(() => {
         // set dataset key so child_added handler won't duplicate
         pin.dataset.key = newRef.key;
+        console.log('Pin saved to DB with key', newRef.key);
       })
       .catch((err) => console.error('Failed to save pin:', err));
   }
