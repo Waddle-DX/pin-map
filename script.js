@@ -133,6 +133,13 @@ if (db) {
 wrapper.addEventListener("click", (e) => {
   if (e.target.id !== "image") return;
 
+  // セッションIDごとのピン数制限チェック（1人当たり10個）
+  const userPins = wrapper.querySelectorAll(`.pin[data-created-by="${sessionId}"]`);
+  if (userPins.length >= 10) {
+    alert('このセッションではピンを10個まで立てられます。古いピンが自動削除されるまで待つか、手動で削除してください。');
+    return;
+  }
+
   const rect = wrapper.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
