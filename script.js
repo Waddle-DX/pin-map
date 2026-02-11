@@ -185,6 +185,13 @@ wrapper.addEventListener("click", (e) => {
         // set dataset key so child_added handler won't duplicate
         pin.dataset.key = newRef.key;
         console.log('Pin saved to DB with key', newRef.key);
+        
+        // 30秒後に自動削除するタイマーをセット
+        setTimeout(() => {
+          db.ref(`pins/${newRef.key}`).remove()
+            .then(() => console.log('Pin auto-deleted after 30s:', newRef.key))
+            .catch((err) => console.error('Failed to auto-delete pin:', err));
+        }, 30000);
       })
       .catch((err) => console.error('Failed to save pin:', err));
   }
