@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!-- HTML5文書であることを宣言 -->
+<html lang="ja">
+<head>
+  <!-- 文字コードをUTF-8に設定 -->
+  <meta charset="UTF-8">
+
+  <!-- ブラウザタブに表示されるタイトル -->
+  <title>ピンを立てるサイト</title>
+
+  <!-- 外部CSSファイルを読み込む -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ページタイトル -->
+  <h1>画像にピンを立てる</h1>
+
+  <!-- ピンの色を選択するラジオボタン -->
+  <div id="color-selector">
+    <label>
+      <input type="radio" name="pinColor" value="red" checked>
+      赤
+    </label>
+    <label>
+      <input type="radio" name="pinColor" value="blue">
+      青
+    </label>
+    <label>
+      <input type="radio" name="pinColor" value="green">
+      緑
+    </label>
+  </div>
+
+  <!-- ピン情報（コメント＋削除ボタン）表示エリア -->
+  <div id="pin-info" class="hidden">
+    <!-- ピンの色を表示するテキスト -->
+    <p id="pin-comment"></p>
+
+    <!-- ピン削除ボタン -->
+    <button id="delete-pin-button">
+      このピンを削除
+    </button>
+  </div>
+
+  <!-- 画像とピンをまとめるラッパー -->
+  <div id="image-wrapper">
+    <!-- ピンを立てる対象画像 -->
+    <img src="sample.png" id="image" alt="ピンを立てる画像">
+  </div>
+
+  <!-- 外部JavaScriptを読み込む -->
+  <script src="script.js"></script>
+</body>
+</html>

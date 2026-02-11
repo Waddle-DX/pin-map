@@ -1,0 +1,2 @@
+# pin-frontend
+public
