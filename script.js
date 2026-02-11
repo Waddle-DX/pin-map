@@ -181,6 +181,10 @@ wrapper.addEventListener("click", (e) => {
     pinInfo.classList.remove("hidden");
   });
 
+  // 仮のキーを付与してローカルのピンを識別（重複防止）
+  const tempKey = 'temp-' + pin.dataset.createdAt;
+  pin.dataset.key = tempKey;
+
   wrapper.appendChild(pin);
 
   // DBがある場合は保存（push）し、キーを割り当てる
@@ -190,7 +194,7 @@ wrapper.addEventListener("click", (e) => {
     const newRef = pinsRef.push();
     newRef.set({ x, y, color: currentColor, createdAt: pin.dataset.createdAt, createdBy: sessionId })
       .then(() => {
-        // set dataset key so child_added handler won't duplicate
+        // 仮のキーを実際のDBキーに置き換え
         pin.dataset.key = newRef.key;
         console.log('Pin saved to DB with key', newRef.key);
         
