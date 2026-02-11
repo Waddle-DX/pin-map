@@ -50,6 +50,45 @@
   </div>
 
   <!-- 外部JavaScriptを読み込む -->
+  <!-- Firebase SDK (compat) - optional: used when you configure Firebase below -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <!--
+    To enable cross-user persistent pins, create a Firebase project and set
+    the config object below (example provided). Place the config script
+    *before* loading `script.js` so the page can initialize Firebase.
+
+    Example (replace values with your project's config):
+    <script>
+      window.FIREBASE_CONFIG = {
+        apiKey: "...",
+        authDomain: "your-project.firebaseapp.com",
+        databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+        projectId: "your-project",
+        storageBucket: "your-project.appspot.com",
+        messagingSenderId: "...",
+        appId: "..."
+      };
+    </script>
+
+    Alternatively set `window.FIREBASE_CONFIG` in DevTools for quick testing.
+  -->
+
+  <script>
+  // Firebase config injected by user
+  window.FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCCa19BNXPre1vsNYy1UWzsRdoKdG_kSEc",
+    authDomain: "moomin-test-127ad.firebaseapp.com",
+    databaseURL: "https://moomin-test-127ad-default-rtdb.firebaseio.com",
+    projectId: "moomin-test-127ad",
+    storageBucket: "moomin-test-127ad.firebasestorage.app",
+    messagingSenderId: "385428931372",
+    appId: "1:385428931372:web:c18d38327eb7e6dd57a289",
+    measurementId: "G-9SQ2MZ8P07"
+  };
+  </script>
+
   <script src="script.js"></script>
 </body>
 </html>
