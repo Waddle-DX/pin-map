@@ -2,6 +2,15 @@
 body {
   font-family: sans-serif;
   background: #f5f5f5;
+  margin: 0;
+  padding: 10px;
+}
+
+/* ページタイトル */
+h1 {
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 20px;
 }
 
 /* 色選択エリア */
@@ -35,6 +44,14 @@ body {
 #image-wrapper {
   position: relative; /* ピンの基準位置 */
   display: inline-block;
+  max-width: 100%;
+}
+
+/* 画像のレスポンシブ対応 */
+#image {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* ピンの共通スタイル */
@@ -46,3 +63,33 @@ body {
   transform: translate(-50%, -50%); /* 中心合わせ */
   cursor: pointer; /* クリック可能を示す */
 }
+
+/* スマートフォン対応（幅が600px以下） */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  #color-selector {
+    font-size: 14px;
+  }
+
+  #color-selector label {
+    margin-right: 10px;
+  }
+
+  #pin-info {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  #pin-comment {
+    font-size: 13px;
+    margin: 0 0 8px 0;
+  }
+
+  #delete-pin-button {
+    padding: 5px 10px;
+    font-size: 13px;
+  }
