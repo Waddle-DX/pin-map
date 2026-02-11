@@ -134,13 +134,14 @@ wrapper.addEventListener("click", (e) => {
   if (e.target.id !== "image") return;
 
   // セッションIDごとのピン数制限チェック（1人当たり5個）
-  // DBに保存済みのピン（keyを持つ）だけをカウント
-  const userPins = wrapper.querySelectorAll(`.pin[data-created-by="${sessionId}"][data-key]`);
+  // DBに実際に保存されたピン（DB キーを持つ、仮キー除外）だけをカウント
+  const allUserPins = wrapper.querySelectorAll(`.pin[data-created-by="${sessionId}"][data-key]`);
+  const userPins = Array.from(allUserPins).filter(pin => !pin.dataset.key.startsWith('temp-'));
   console.log('=== ピン数カウント ===');
   console.log('sessionId:', sessionId);
-  console.log('セレクタで該当するピン:', userPins.length);
+  console.log('DBに保存されたピン数:', userPins.length);
   userPins.forEach((pin, index) => {
-    console.log(`  ${index + 1}. key=${pin.dataset.key}, color=${pin.dataset.color}, createdAt=${pin.dataset.createdAt}`);
+    console.log(`  ${index + 1}. key=${pin.dataset.key}, color=${pin.dataset.color}`);
   });
   
   // すべてのピンも確認
