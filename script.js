@@ -187,11 +187,14 @@ wrapper.addEventListener("click", (e) => {
         console.log('Pin saved to DB with key', newRef.key);
         
         // 30秒後に自動削除するタイマーをセット
-        setTimeout(() => {
+        console.log('Setting auto-delete timer for key:', newRef.key);
+        const timeoutId = setTimeout(() => {
+          console.log('Auto-delete timer fired, attempting to remove:', newRef.key);
           db.ref(`pins/${newRef.key}`).remove()
             .then(() => console.log('Pin auto-deleted after 30s:', newRef.key))
             .catch((err) => console.error('Failed to auto-delete pin:', err));
         }, 30000);
+        console.log('Timer set with ID:', timeoutId);
       })
       .catch((err) => console.error('Failed to save pin:', err));
   }
