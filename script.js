@@ -22,6 +22,8 @@ let selectedPin = null;
 // Firebase Realtime Database 参照（null なら未設定）
 let db = null;
 
+
+
 // デバッグログ：スクリプト読み込み確認
 console.log('script.js loaded - firebase defined?', typeof firebase !== 'undefined');
 
@@ -85,6 +87,11 @@ function addPinFromData(key, data) {
   pin.dataset.createdAt = data.createdAt || new Date().toISOString();
   pin.dataset.key = key;
   pin.dataset.createdBy = data.createdBy || 'unknown';
+
+  //手動追記
+  pin.style.opacity = "1";
+  pin.style.transition = "opacity 30s linear";
+
 
   pin.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -236,18 +243,38 @@ wrapper.addEventListener("click", (e) => {
         console.log('Pin saved to DB with key', newRef.key);
         
         // 30秒後に自動削除するタイマーをセット
-        console.log('Setting auto-delete timer for key:', newRef.key);
+        //console.log('Setting auto-delete timer for key:', newRef.key);
+        //const timeoutId = setTimeout(() => {
+        //  console.log('Auto-delete timer fired, attempting to remove:', newRef.key);
+        //  db.ref(`pins/${newRef.key}`).remove()
+        //    .then(() => console.log('Pin auto-deleted after 30s:', newRef.key))
+        //    .catch((err) => console.error('Failed to auto-delete pin:', err));
+        //}, 30000);
+        
+        // フェードアウト開始（置いた瞬間から30秒かけて透明に）
+        const fadeEl = document.querySelector(`.pin[data-key="${newRef.key}"]`);
+        if (fadeEl) {
+          fadeEl.style.opacity = "1";
+          fadeEl.style.transition = "opacity 30s linear";
+
+          // 次の描画フレームで opacity を変更（確実にtransitionを効かせる）
+          requestAnimationFrame(() => {
+            fadeEl.style.opacity = "0";
+          });
+        }
+
+        // フェード完了後にDBから削除
         const timeoutId = setTimeout(() => {
-          console.log('Auto-delete timer fired, attempting to remove:', newRef.key);
+          console.log('Fade completed, removing pin:', newRef.key);
           db.ref(`pins/${newRef.key}`).remove()
-            .then(() => console.log('Pin auto-deleted after 30s:', newRef.key))
+            .then(() => console.log('Pin faded out & deleted after 30s:', newRef.key))
             .catch((err) => console.error('Failed to auto-delete pin:', err));
-        }, 30000);
+        }, 30100);
         console.log('Timer set with ID:', timeoutId);
       })
       .catch((err) => console.error('Failed to save pin:', err));
-  }
-});
+    }
+  });
 
 /* ===== 削除ボタンが押されたとき ===== */
 deleteButton.addEventListener("click", () => {
