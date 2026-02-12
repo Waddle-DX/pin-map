@@ -57,8 +57,8 @@ h1 {
 /* ピンの共通スタイル */
 .pin {
   position: absolute; /* 画像上に配置 */
-  width: 14px;
-  height: 14px;
+  width: clamp(10px, 2vw, 14px);
+  height: clamp(10px, 2vw, 14px);
   border-radius: 50%; /* 円形 */
   transform: translate(-50%, -50%); /* 中心合わせ */
   cursor: pointer; /* クリック可能を示す */
@@ -92,5 +92,10 @@ h1 {
   #delete-pin-button {
     padding: 5px 10px;
     font-size: 13px;
+  }
+
+  .pin {
+    width: 10px;
+    height: 10px;
   }
 }
