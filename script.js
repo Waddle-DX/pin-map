@@ -355,7 +355,7 @@ wrapper.addEventListener("click", (e) => {
       y,
       color: currentColor,
       createdAt: createdAtIso,
-      createdAtMs: firebase.database.ServerValue.TIMESTAMP,
+      createdAtMs: createdAtMs,
       createdBy: authUid
     })
       .then(() => {
