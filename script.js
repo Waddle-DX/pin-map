@@ -85,10 +85,19 @@ function scheduleFadeAndDelete(pinEl, createdAtIso, createdAtMs, key) {
   });
 
   setTimeout(() => {
-    if (db && key && pinEl.dataset.createdBy === (authUid || sessionId)) {
+    const currentAuthUid = authUid || sessionId;
+    const createdByValue = pinEl.dataset.createdBy;
+    const ownershipMatches = createdByValue === currentAuthUid;
+    
+    console.log(`[Auto-Delete Debug] Key: ${key}, Current Auth: ${currentAuthUid}, CreatedBy: ${createdByValue}, Ownership Match: ${ownershipMatches}`);
+    
+    if (db && key && ownershipMatches) {
+      console.log(`[Auto-Delete] Proceeding with deletion for key: ${key}`);
       db.ref(`pins/${key}`).remove()
         .then(() => console.log('Pin faded out & deleted after 60s:', key))
         .catch((err) => console.error('Failed to auto-delete pin:', err));
+    } else {
+      console.log(`[Auto-Delete] Skipped deletion - condition failed. db=${!!db}, key=${!!key}, owned=${ownershipMatches}`);
     }
   }, remaining + 100);
 }
