@@ -52,7 +52,7 @@ if (!sessionId) {
 }
 console.log('Session ID:', sessionId);
 
-const FADE_DURATION_MS = 30000;
+const FADE_DURATION_MS = 60000;
 
 function clamp01(value) {
   return Math.min(1, Math.max(0, value));
@@ -62,8 +62,8 @@ function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-function scheduleFadeAndDelete(pinEl, createdAtIso, key) {
-  const createdAtTime = new Date(createdAtIso).getTime();
+function scheduleFadeAndDelete(pinEl, createdAtIso, createdAtMs, key) {
+  const createdAtTime = isFiniteNumber(createdAtMs) ? createdAtMs : new Date(createdAtIso).getTime();
   const now = Date.now();
   const elapsed = now - createdAtTime;
   const remaining = FADE_DURATION_MS - elapsed;
@@ -87,7 +87,7 @@ function scheduleFadeAndDelete(pinEl, createdAtIso, key) {
   setTimeout(() => {
     if (db && key) {
       db.ref(`pins/${key}`).remove()
-        .then(() => console.log('Pin faded out & deleted after 30s:', key))
+        .then(() => console.log('Pin faded out & deleted after 60s:', key))
         .catch((err) => console.error('Failed to auto-delete pin:', err));
     }
   }, remaining + 100);
@@ -169,7 +169,10 @@ function addPinFromData(key, data) {
   }
   pin.style.backgroundColor = data.color;
   pin.dataset.color = data.color;
-  pin.dataset.createdAt = data.createdAt || new Date().toISOString();
+  const createdAtIso = data.createdAt || new Date().toISOString();
+  const createdAtMs = isFiniteNumber(data.createdAtMs) ? data.createdAtMs : new Date(createdAtIso).getTime();
+  pin.dataset.createdAt = createdAtIso;
+  pin.dataset.createdAtMs = String(createdAtMs);
   pin.dataset.key = key;
   pin.dataset.createdBy = data.createdBy || 'unknown';
   if (xPct !== null && yPct !== null) {
@@ -178,14 +181,15 @@ function addPinFromData(key, data) {
   }
 
   // 生成時刻に合わせてフェード開始
-  scheduleFadeAndDelete(pin, pin.dataset.createdAt, key);
+  scheduleFadeAndDelete(pin, pin.dataset.createdAt, createdAtMs, key);
 
 
   pin.addEventListener("click", (event) => {
     event.stopPropagation();
     selectedPin = pin;
 
-    const date = new Date(pin.dataset.createdAt);
+    const createdAtValue = pin.dataset.createdAtMs ? Number(pin.dataset.createdAtMs) : pin.dataset.createdAt;
+    const date = new Date(createdAtValue);
     const formattedTime =
       `${date.getFullYear()}年` +
       `${date.getMonth() + 1}月` +
@@ -213,17 +217,19 @@ function addPinFromData(key, data) {
 if (db) {
   const pinsRef = db.ref('pins');
 
-  // ページロード時に30秒以上古いピンを削除
+  // ページロード時に60秒以上古いピンを削除
   pinsRef.once('value', (snapshot) => {
     const now = new Date().getTime();
     snapshot.forEach((childSnapshot) => {
       const key = childSnapshot.key;
       const data = childSnapshot.val();
-      const createdAtTime = new Date(data.createdAt).getTime();
+      const createdAtTime = isFiniteNumber(data.createdAtMs)
+        ? data.createdAtMs
+        : new Date(data.createdAt).getTime();
       const ageMs = now - createdAtTime;
       
-      // 30秒以上古いピンはDBから削除
-      if (ageMs > 30000) {
+      // 60秒以上古いピンはDBから削除
+      if (ageMs > 60000) {
         console.log(`Cleaning up old pin: ${key} (age: ${Math.floor(ageMs / 1000)}s)`);
         pinsRef.child(key).remove();
       }
@@ -293,7 +299,10 @@ wrapper.addEventListener("click", (e) => {
   pin.style.backgroundColor = currentColor;
   pin.dataset.color = currentColor;
   const createdAt = new Date();
-  pin.dataset.createdAt = createdAt.toISOString();
+  const createdAtIso = createdAt.toISOString();
+  const createdAtMs = Date.now();
+  pin.dataset.createdAt = createdAtIso;
+  pin.dataset.createdAtMs = String(createdAtMs);
   pin.dataset.createdBy = ownerId || sessionId;
   pin.dataset.xPct = String(xPct);
   pin.dataset.yPct = String(yPct);
@@ -302,7 +311,8 @@ wrapper.addEventListener("click", (e) => {
     event.stopPropagation();
     selectedPin = pin;
 
-    const date = new Date(pin.dataset.createdAt);
+    const createdAtValue = pin.dataset.createdAtMs ? Number(pin.dataset.createdAtMs) : pin.dataset.createdAt;
+    const date = new Date(createdAtValue);
     const formattedTime =
       `${date.getFullYear()}年` +
       `${date.getMonth() + 1}月` +
@@ -338,7 +348,16 @@ wrapper.addEventListener("click", (e) => {
     }
     const pinsRef = db.ref('pins');
     const newRef = pinsRef.push();
-    newRef.set({ xPct, yPct, x, y, color: currentColor, createdAt: pin.dataset.createdAt, createdBy: authUid })
+    newRef.set({
+      xPct,
+      yPct,
+      x,
+      y,
+      color: currentColor,
+      createdAt: createdAtIso,
+      createdAtMs: firebase.database.ServerValue.TIMESTAMP,
+      createdBy: authUid
+    })
       .then(() => {
         // 仮のキーを実際のDBキーに置き換え
         pin.dataset.key = newRef.key;
@@ -356,7 +375,7 @@ wrapper.addEventListener("click", (e) => {
         // フェード開始と自動削除を統一
         const fadeEl = document.querySelector(`.pin[data-key="${newRef.key}"]`);
         if (fadeEl) {
-          scheduleFadeAndDelete(fadeEl, pin.dataset.createdAt, newRef.key);
+          scheduleFadeAndDelete(fadeEl, pin.dataset.createdAt, createdAtMs, newRef.key);
         }
       })
       .catch((err) => console.error('Failed to save pin:', err));
