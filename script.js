@@ -469,20 +469,16 @@ if (exportButton) {
       console.log(`Found ${Object.keys(logsData).length} logs for today`);
       exportButton.textContent = `${Object.keys(logsData).length}個のピンを画像化中...`;
 
-      // 現在のピンを一時的に非表示にして復元用に保存
-      const currentPins = wrapper.querySelectorAll('.pin');
-      const pinBackup = Array.from(currentPins).map(pin => {
-        // 計算されたdisplay値を保存
-        const computedDisplay = window.getComputedStyle(pin).display;
-        pin.style.display = 'none';
-        return { pin, computedDisplay };
-      });
+      // 元のwrapperのクローンを作成（元のDOMに一切触らない）
+      const exportWrapper = wrapper.cloneNode(true);
+      
+      // クローンのすべてのピンを削除
+      exportWrapper.querySelectorAll('.pin').forEach(pin => pin.remove());
 
-      // ログからピンを一時的に作成
-      const tempPins = [];
+      // ログからピンを作成してクローンに追加
       Object.entries(logsData).forEach(([key, data]) => {
         const pin = document.createElement("div");
-        pin.className = "pin temp-export-pin";
+        pin.className = "pin";
         const xPct = isFiniteNumber(data.xPct) ? data.xPct : null;
         const yPct = isFiniteNumber(data.yPct) ? data.yPct : null;
 
@@ -492,27 +488,26 @@ if (exportButton) {
         }
         pin.style.backgroundColor = data.color;
         pin.style.opacity = '1'; // 完全に表示
-        wrapper.appendChild(pin);
-        tempPins.push(pin);
+        exportWrapper.appendChild(pin);
       });
+
+      // クローンを一時的にDOMに追加（html2canvasで描画するため）
+      exportWrapper.style.position = 'fixed';
+      exportWrapper.style.left = '-9999px';
+      document.body.appendChild(exportWrapper);
 
       // 少し待ってDOMを安定させる
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // html2canvasで画像化
-      const canvas = await html2canvas(wrapper, {
+      const canvas = await html2canvas(exportWrapper, {
         backgroundColor: '#ffffff',
         scale: 2, // 高解像度
         logging: false
       });
 
-      // 一時ピンを削除
-      tempPins.forEach(pin => pin.remove());
-
-      // 元のピンの表示を復元
-      pinBackup.forEach(({pin, computedDisplay}) => {
-        pin.style.display = computedDisplay;
-      });
+      // クローンを削除
+      exportWrapper.remove();
 
       // 画像をダウンロード
       const link = document.createElement('a');
