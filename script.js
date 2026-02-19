@@ -62,6 +62,12 @@ function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+function getJstDateKey(dateValue = new Date()) {
+  const sourceDate = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  const jstDate = new Date(sourceDate.getTime() + (9 * 60 * 60 * 1000));
+  return jstDate.toISOString().split('T')[0];
+}
+
 function scheduleFadeAndDelete(pinEl, createdAtIso, createdAtMs, key) {
   const createdAtTime = isFiniteNumber(createdAtMs) ? createdAtMs : new Date(createdAtIso).getTime();
   const now = Date.now();
@@ -381,7 +387,7 @@ wrapper.addEventListener("click", (e) => {
         console.log('Pin saved to DB with key', newRef.key);
         
         // ログにも保存（日付別）
-        const logDate = new Date(createdAtMs).toISOString().split('T')[0]; // YYYY-MM-DD
+        const logDate = getJstDateKey(new Date(createdAtMs)); // YYYY-MM-DD (JST)
         db.ref(`pin_logs/${logDate}/${newRef.key}`).set({
           xPct,
           yPct,
@@ -452,7 +458,7 @@ if (exportButton) {
 
     try {
       // 今日の日付を取得
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const today = getJstDateKey(new Date()); // YYYY-MM-DD (JST)
       console.log(`Fetching logs for date: ${today}`);
 
       // ログデータを取得
@@ -524,12 +530,6 @@ if (exportButton) {
       alert(`画像のエクスポートに失敗しました: ${error.message}`);
       exportButton.textContent = '今日のログを画像として保存';
       exportButton.disabled = false;
-
-      // エラー時も元の表示を復元
-      const allTempPins = wrapper.querySelectorAll('.temp-export-pin');
-      allTempPins.forEach(pin => pin.remove());
-      const currentPins = wrapper.querySelectorAll('.pin');
-      currentPins.forEach(pin => pin.style.display = '');
     }
   });
 }
